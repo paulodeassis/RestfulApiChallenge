@@ -39,11 +39,11 @@ public class Config extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers("/").permitAll()
             .antMatchers("/console/**").permitAll()            
-            .antMatchers("/challenge/signup").permitAll()
-            .antMatchers("/challenge/signin").permitAll()
+            .antMatchers(HttpMethod.POST, "/challenge/signup").permitAll()
+            .antMatchers(HttpMethod.POST, "/challenge/signin").permitAll()
+            .antMatchers(HttpMethod.GET, "/challenge/me").permitAll()
             .antMatchers(HttpMethod.GET, "/challenge/status/check").permitAll()            
-            .anyRequest().authenticated()
-            
+            .anyRequest().authenticated()            
         .and()
         .apply(new JwtConfigurer(jwtTokenProvider));
     }

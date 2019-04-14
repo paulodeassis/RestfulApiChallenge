@@ -1,11 +1,18 @@
 package br.com.pitang.challenge.models;
 
+import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
+import java.security.Timestamp;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,7 +27,7 @@ import br.com.pitang.challenge.common.Hashing;
 
 @Entity
 @Table(name="USER")
-public class User implements UserDetails  {
+public class User implements Serializable  {
 	/**
 	 * 
 	 */
@@ -30,11 +37,31 @@ public class User implements UserDetails  {
 	private Long id;
 	private String firstName;
 	private String lastName;
+	@Column(unique=true)
 	private String email;
 	private String password;
+	private LocalDate created_at;
+
+	private LocalDate last_login;
 	
+	public String getLast_login() {
+		return convertDateToString(this.last_login);		
+	}
+
+	public void setLast_login(LocalDate last_login) {
+		this.last_login = last_login;
+	}
+
 	@OneToMany(cascade=CascadeType.ALL)	
 	private List<Phone> phones = new ArrayList<Phone>();
+	
+	public String getCreated_at() {
+		return convertDateToString(created_at);
+	}
+	
+	public void setCreated_at(LocalDate created_at) {
+		this.created_at = created_at;
+	}
 	
 	public Long getId() {
 		return id;
@@ -61,7 +88,7 @@ public class User implements UserDetails  {
 	}
 	
 	public void setEmail(String email) {
-		this.email = email;
+		this.email = email;		
 	}
 	
 	public String getPassword() {
@@ -79,40 +106,11 @@ public class User implements UserDetails  {
 	public void setPhones(List<Phone> phones) {
 		this.phones = phones;
 	}
+	
+	private String convertDateToString(LocalDate localDate) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getUsername() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isAccountNonExpired() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isCredentialsNonExpired() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
+        String date = formatter.format(localDate);
+        return date;
 	}
 }

@@ -10,7 +10,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * @author Paulo de Assis
  *
  */
-public class Credentials  extends UsernamePasswordAuthenticationFilter implements Serializable{
+public class Credentials  extends UsernamePasswordAuthenticationFilter{
 
 	/**
 	 * 

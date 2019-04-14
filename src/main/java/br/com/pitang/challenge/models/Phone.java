@@ -13,7 +13,7 @@ import javax.persistence.UniqueConstraint;
 
 @Entity
 @Table(name="PHONE")
-public class Phone implements Serializable {
+public class Phone{
 	/**
 	 * 
 	 */

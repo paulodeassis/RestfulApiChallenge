@@ -9,12 +9,12 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
 import br.com.pitang.challenge.exceptions.InvalidJwtAuthenticationException;
 import br.com.pitang.challenge.exceptions.UserNotFoundException;
+import br.com.pitang.challenge.models.User;
 
 public class JwtTokenFilter extends GenericFilterBean {
     private JwtTokenProvider jwtTokenProvider;
@@ -25,16 +25,15 @@ public class JwtTokenFilter extends GenericFilterBean {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
         throws IOException, ServletException {
-        String token = jwtTokenProvider.resolveToken((HttpServletRequest) request);
+    	HttpServletRequest  srvlRequest = (HttpServletRequest) request;
+        String token = srvlRequest.getHeader("Authorization"); //jwtTokenProvider.resolveToken(srvlRequest);
         try {
 			if (token != null && jwtTokenProvider.validateToken(token)) {
-			    Authentication auth = token != null ? jwtTokenProvider.getAuthentication(token) : null;
-			    SecurityContextHolder.getContext().setAuthentication(auth);
+			    User user = token != null ? jwtTokenProvider.getAuthentication(token) : null;			  
 			}
-		} catch (InvalidJwtAuthenticationException | UserNotFoundException | NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block			
+		} catch (InvalidJwtAuthenticationException | UserNotFoundException | NoSuchAlgorithmException e) {		
 			e.printStackTrace();
 		}
-        filterChain.doFilter(request, response);        
+        filterChain.doFilter(request, response);
     }
 }

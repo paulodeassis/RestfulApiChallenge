@@ -11,7 +11,6 @@ import br.com.pitang.challenge.models.User;
 @Repository
 public interface UserRepository  extends CrudRepository<User, Long> {
 	 @Query(value = "SELECT * FROM USER U WHERE U.EMAIL= ?1 AND U.PASSWORD = ?2", nativeQuery = true)
-	 User findByCredential(String email, String password) throws UserNotFoundException;
-	 //@Param("mail") String email, @Param("password") String password
+	 User findByCredential(@Param("mail") String email, @Param("password") String password) throws UserNotFoundException;
 }
 

@@ -1,5 +1,7 @@
 package br.com.pitang.challenge.security;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,8 +22,8 @@ public class UserAuthenticationService {
 		this.userRepository = userRepository;
 	}
 	
-	public UserDetails loadUserByCredential(Credentials credential) throws UserNotFoundException {
-		User user = userRepository.findByCredential(credential.getEmail(), credential.getPassword());		
+	public User loadUserByCredential(Credentials credential) throws UserNotFoundException {
+		User user = userRepository.findByCredential(credential.getEmail(), credential.getPassword());
 		return user;
 	}
 	

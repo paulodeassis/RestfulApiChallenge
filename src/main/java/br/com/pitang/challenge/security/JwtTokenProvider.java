@@ -1,27 +1,29 @@
 package br.com.pitang.challenge.security;
 
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import br.com.pitang.challenge.exceptions.InvalidJwtAuthenticationException;
 import br.com.pitang.challenge.exceptions.UserNotFoundException;
 import br.com.pitang.challenge.models.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 
 @Component
 public class JwtTokenProvider {
@@ -38,54 +40,65 @@ public class JwtTokenProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
     
-    public String createToken(String email, String password) {
-    
-    	Claims claims = Jwts.claims().setSubject(email);
-        claims.put("password", password);
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
-        
-        return Jwts.builder()//
-            .setClaims(claims)//
-            .setIssuedAt(now)//
-            .setExpiration(validity)//
-            .signWith(SignatureAlgorithm.HS256, secretKey)//
-            .compact();
-    }
-    
-    public Authentication getAuthentication(String token) throws UserNotFoundException, NoSuchAlgorithmException {    	
-        UserDetails userDetails =  (UserDetails) getAuthentication(getUsername(token));
-        
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    public void createToken(String email, String password, HttpServletResponse response) throws UnsupportedEncodingException {
+    	Date now = new Date();
+    	 Date validity = new Date(now.getTime() + validityInMilliseconds);
+    	 String mailPassword = email+"_"+password;
+    	String JWT = Jwts.builder()
+				.setSubject(mailPassword)
+				.setExpiration(validity)
+				.signWith(SignatureAlgorithm.HS512, secretKey)
+				.compact();    	
+    	response.addHeader("Authorization", "Bearer "+ JWT);	
     }
     
     
-    public UserDetails getAuthentication(Credentials credential) throws UserNotFoundException {
+    public User getAuthentication(String token) throws UserNotFoundException, NoSuchAlgorithmException {    	
+        User user = getAuthentication(getUser(token));        
+        return user;
+    }
+    
+    
+    public User getAuthentication(Credentials credential) throws UserNotFoundException {
     	return this.userDetailsService.loadUserByCredential(credential);
     }
     
-    public Credentials getUsername(String token) throws NoSuchAlgorithmException {
-    	String email = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
-    	String password = Jwts.parser().setSigningKey("password").parseClaimsJws(token).getBody().getSubject();
+    public Credentials getUser(String token) throws NoSuchAlgorithmException {
+    	token = Jwts.parser()
+					.setSigningKey(secretKey)
+					.parseClaimsJws(token.replace("Bearer ", ""))
+					.getBody()
+					.getSubject();
+    	String email = token.split("_")[0];
+    	String password = token.split("_")[1];
     	Credentials credential = new Credentials();
     	credential.setEmail(email);
     	credential.setPassword(password);
-    	
-    	return credential;//Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+    	return credential;    	
     }
     
-    public String resolveToken(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        if (token != null) {
-            return token;
+    public String resolveToken(HttpServletRequest request) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException, UnsupportedEncodingException {        
+    	String token = request.getHeader("Authorization");    	
+        if (token != null && token.startsWith("Bearer ")) {
+        	token = Jwts.parser()
+        			.setSigningKey(secretKey)
+        			.parseClaimsJws(token.replace("Bearer ", ""))
+        			.getBody()
+        			.getSubject();  
+        	return token;
         }
-        return null;
+    	
+        return "Unauthorized";      
     }
     
     public boolean validateToken(String token) throws InvalidJwtAuthenticationException {
+    	System.out.println("VALIDATION METHHOD\n"+token);
+    	System.out.println(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token.replace("Bearer ", ""))
+    			.getBody().getExpiration()); 
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-            if (claims.getBody().getExpiration().before(new Date())) {
+        	/*checks if the expiration date is older then today.*/
+            if (Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token.replace("Bearer ", ""))
+        			.getBody().getExpiration().before(new Date())) {
                 return false;
             }
             return true;
