@@ -36,15 +36,14 @@ public class SigninController {
 	UserRepository userRepository;
 	
 	@PostMapping("/signin")
-	public Response signin(@RequestBody Credentials credential, HttpServletResponse response) throws NoSuchAlgorithmException {
+	public void signin(@RequestBody Credentials credential, HttpServletResponse response) throws NoSuchAlgorithmException {
 		 String email = credential.getEmail();
 		 String password = Hashing.getInstance().getHash(credential.getPassword());
-		 Response response1 = new Response();
-		 
+		 Response customResponse = new Response();		
 		 if(!Validator.getInstance().isFilledField(email)
 				 || !Validator.getInstance().isFilledField(password)) {
-			 response1.setCode(0);
-			 response1.setMessage(Constants.MESSAGE_MISSING_FIELDS);
+			 customResponse.setCode(0);
+			 customResponse.setMessage(Constants.MESSAGE_MISSING_FIELDS);
 		 }
 	
 		try {	 
@@ -55,13 +54,12 @@ public class SigninController {
 				 user.setLast_login(lastLogin);
 				 this.userRepository.save(user);				 
 			 }else {
-				 response1.setCode(0);
-				 response1.setMessage("User not found.");
+				 customResponse.setCode(0);
+				 customResponse.setMessage(Constants.MESSAGE_INVALID_MAIL_PASSWORD);
 			 }
 	     } catch (Exception e) {
-	    	 response1.setCode(HttpStatus.FORBIDDEN.value());
-	    	 response1.setMessage(Constants.MESSAGE_INVALID_MAIL_PASSWORD);
+	    	 customResponse.setCode(HttpStatus.FORBIDDEN.value());
+	    	 customResponse.setMessage(Constants.MESSAGE_INVALID_MAIL_PASSWORD);
 	     }
-		return response1;
 	}
 }

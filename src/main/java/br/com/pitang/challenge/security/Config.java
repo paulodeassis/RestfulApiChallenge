@@ -30,7 +30,6 @@ public class Config extends WebSecurityConfigurerAdapter {
 	
 	@Override
     protected void configure(HttpSecurity http) throws Exception {
-    //@formatter:off
     http.headers().frameOptions().disable()
     	.and()
         .csrf().disable()        
@@ -42,7 +41,7 @@ public class Config extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, "/challenge/signup").permitAll()
             .antMatchers(HttpMethod.POST, "/challenge/signin").permitAll()
             .antMatchers(HttpMethod.GET, "/challenge/me").permitAll()
-            .antMatchers(HttpMethod.GET, "/challenge/status/check").permitAll()            
+            .antMatchers(HttpMethod.GET, "/challenge/info").permitAll()            
             .anyRequest().authenticated()            
         .and()
         .apply(new JwtConfigurer(jwtTokenProvider));

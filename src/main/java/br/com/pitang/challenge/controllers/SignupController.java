@@ -96,10 +96,5 @@ public class SignupController {
 			}			
 		}
 		return isPhoneValide;
-	}
-	
-	@GetMapping("/status/check")
-	public String status() {
-		return "Laufend";
 	}	
 }
