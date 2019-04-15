@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
