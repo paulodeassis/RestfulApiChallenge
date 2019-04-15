@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import br.com.pitang.challenge.common.Constants;
 import br.com.pitang.challenge.exceptions.InvalidJwtAuthenticationException;
 import br.com.pitang.challenge.exceptions.UserNotFoundException;
 import br.com.pitang.challenge.models.User;
@@ -44,12 +45,12 @@ public class JwtTokenProvider {
     	Date now = new Date();
     	 Date validity = new Date(now.getTime() + validityInMilliseconds);
     	 String mailPassword = email+"_"+password;
-    	String JWT = Jwts.builder()
+    	String token = Jwts.builder()
 				.setSubject(mailPassword)
 				.setExpiration(validity)
 				.signWith(SignatureAlgorithm.HS512, secretKey)
 				.compact();    	
-    	response.addHeader("Authorization", "Bearer "+ JWT);	
+    	response.addHeader(Constants.AUTHORIZATION, Constants.TOKEN_PREFIX+ token);	
     }
     
     
@@ -92,9 +93,6 @@ public class JwtTokenProvider {
     }
     
     public boolean validateToken(String token) throws InvalidJwtAuthenticationException {
-    	System.out.println("VALIDATION METHHOD\n"+token);
-    	System.out.println(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token.replace("Bearer ", ""))
-    			.getBody().getExpiration()); 
         try {
         	/*checks if the expiration date is older then today.*/
             if (Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token.replace("Bearer ", ""))

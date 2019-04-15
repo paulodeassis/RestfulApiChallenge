@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.pitang.challenge.common.Constants;
 import br.com.pitang.challenge.common.Hashing;
 import br.com.pitang.challenge.common.Response;
+import br.com.pitang.challenge.common.Validator;
 import br.com.pitang.challenge.models.User;
 import br.com.pitang.challenge.repository.UserRepository;
 import br.com.pitang.challenge.security.Credentials;
@@ -35,11 +37,18 @@ public class SigninController {
 	
 	@PostMapping("/signin")
 	public Response signin(@RequestBody Credentials credential, HttpServletResponse response) throws NoSuchAlgorithmException {
-		 String mail = credential.getEmail();
+		 String email = credential.getEmail();
 		 String password = Hashing.getInstance().getHash(credential.getPassword());
 		 Response response1 = new Response();
+		 
+		 if(!Validator.getInstance().isFilledField(email)
+				 || !Validator.getInstance().isFilledField(password)) {
+			 response1.setCode(0);
+			 response1.setMessage(Constants.MESSAGE_MISSING_FIELDS);
+		 }
+	
 		try {	 
-			 User user = this.userRepository.findByCredential(mail, password);
+			 User user = this.userRepository.findByCredential(email, password);
 			 if(user != null) {
 				 jwtTokenProvider.createToken(user.getEmail(),user.getPassword(), response); 
 				 LocalDate lastLogin= LocalDate.now();
@@ -50,9 +59,8 @@ public class SigninController {
 				 response1.setMessage("User not found.");
 			 }
 	     } catch (Exception e) {
-	    	 
 	    	 response1.setCode(HttpStatus.FORBIDDEN.value());
-	    	 response1.setMessage("Missing Fields");
+	    	 response1.setMessage(Constants.MESSAGE_INVALID_MAIL_PASSWORD);
 	     }
 		return response1;
 	}

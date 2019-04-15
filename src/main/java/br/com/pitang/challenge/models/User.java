@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -35,7 +36,9 @@ public class User implements Serializable  {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
+	@Column(columnDefinition="VARCHAR(50)")
 	private String firstName;
+	@Column(columnDefinition="VARCHAR(50)")
 	private String lastName;
 	@Column(unique=true)
 	private String email;

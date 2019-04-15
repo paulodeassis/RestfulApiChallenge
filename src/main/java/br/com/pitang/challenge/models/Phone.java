@@ -24,10 +24,15 @@ public class Phone{
 	private int id;
 	
 	@PrimaryKeyJoinColumn
-	@Column(name="NUMBER")
+	@Column(name="NUMBER", columnDefinition="NUMBER(9)")
 	private Integer number;
-	@Column(name="AREA_CODE")
+	
+	@Column(name="AREA_CODE",columnDefinition="NUMBER(3)" )
 	private Integer area_code;
+	
+	@Column(name="COUNTRY_CODE", columnDefinition="VARCHAR(3)")
+	private String country_code;
+	
 	public Integer getArea_code() {
 		return area_code;
 	}
@@ -44,9 +49,6 @@ public class Phone{
 		this.country_code = country_code;
 	}
 
-	@Column(name="COUNTRY_CODE")
-	private String country_code;
-				
 	public Integer getNumber() {
 		return number;
 	}

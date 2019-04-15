@@ -38,7 +38,7 @@ public class Config extends WebSecurityConfigurerAdapter {
         .and()
             .authorizeRequests()
             .antMatchers("/").permitAll()
-            .antMatchers("/console/**").permitAll()            
+            .antMatchers("/h2-console/**").permitAll()            
             .antMatchers(HttpMethod.POST, "/challenge/signup").permitAll()
             .antMatchers(HttpMethod.POST, "/challenge/signin").permitAll()
             .antMatchers(HttpMethod.GET, "/challenge/me").permitAll()
