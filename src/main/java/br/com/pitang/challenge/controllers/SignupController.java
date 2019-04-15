@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.hibernate.exception.ConstraintViolationException;
+import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,23 +42,23 @@ public class SignupController {
 		Response responseMessage = new Response();
 		try {
 			/*Checks if all relevant fiels are valids*/
-			if(!validateUser(user)) {
+			if(validateUser(user)) {
+				LocalDate created = LocalDate.now();
+				user.setCreated_at(created);
+				userRepository.save(user);
+				jwtTokenProvider.createToken(user.getEmail(), user.getPassword(), response);
+			}else {
 				responseMessage.setCode(0);
 				responseMessage.setMessage(Constants.MESSAGE_INVALID_FIELDS);
 				response.addHeader("Message",responseMessage.GetResponseMessage());
-				throw new Exception();
-			}
-			
-			LocalDate created = LocalDate.now();
-			user.setCreated_at(created);
-			userRepository.save(user);
-			jwtTokenProvider.createToken(user.getEmail(), user.getPassword(), response);
-			response.addHeader(Constants.AUTHORIZATION, token);			
-		}catch (ConstraintViolationException e) {
+				response.addHeader(Constants.AUTHORIZATION, token);			
+			}			
+		}catch (Exception e) {
 			responseMessage.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
 			responseMessage.setMessage(Constants.MESSAGE_EMAIL_EXISTS);
 			String errorMessage = responseMessage.GetResponseMessage();
-			response.addHeader("Message", errorMessage);						
+			response.addHeader("Message", errorMessage);
+			throw e;
 		} 		
 	}
 
@@ -84,10 +84,16 @@ public class SignupController {
 		boolean isPhoneValide = false;
 		if(phones != null) {
 			for(Phone phone : phones) {
-				String countryCode = phone.getCountry_code().substring(0, 1);
-				isPhoneValide = (Validator.getInstance().isOnlyNumber(phone.getCountry_code())&&
+				if(phone.getArea_code()!=null || phone.getArea_code()>0) {
+					if(phone.getCountry_code()!=null) {
+						String countryCode = phone.getCountry_code();
+						countryCode = countryCode.substring(1, countryCode.length());
+						isPhoneValide = (Validator.getInstance().isOnlyNumber(phone.getArea_code().toString())&&
 								Validator.getInstance().isOnlyNumber(phone.getNumber().toString())&&
-								Validator.getInstance().isOnlyNumber(countryCode));
+								Validator.getInstance().isOnlyNumber(countryCode));						
+					}
+				}
+				
 			}			
 		}
 		return isPhoneValide;

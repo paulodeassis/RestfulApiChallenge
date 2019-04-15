@@ -111,9 +111,11 @@ public class User implements Serializable  {
 	}
 	
 	private String convertDateToString(LocalDate localDate) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        String date = formatter.format(localDate);
+		String date="";
+		if(localDate != null) {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+			date = formatter.format(localDate);
+		}
         return date;
 	}
 }
